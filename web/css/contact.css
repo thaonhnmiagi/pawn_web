@@ -1,0 +1,18 @@
+.contact-section {
+    padding: 30px 50px;
+    /* background: #E3E6F3; */
+}
+
+.contact-section h2 {
+    text-align: center;
+}
+
+.list-address .row {
+    display: flex;
+    justify-content: space-between;
+}
+
+.contact .custom-item,
+.address .custom-item {
+    flex-basis: 48%;
+}
