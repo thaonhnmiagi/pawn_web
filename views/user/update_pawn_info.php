@@ -12,6 +12,35 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
+if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['id'])) {
+    $pawnInfoID = $_GET['id'];
+    $sql = "SELECT * FROM pawn_info WHERE id = '$pawnInfoID'";
+    $result = $conn->query($sql);
+    if ($result->num_rows > 0) {
+        while ($row = $result->fetch_assoc()) {
+            $userId = $row['user_id'];
+
+            $sqlUser = "SELECT * FROM users WHERE id = '$userId'";
+            $resultUser = $conn->query($sqlUser);
+
+            if ($resultUser->num_rows > 0) {
+                $rowUser = $resultUser->fetch_assoc();
+                $fullName = $rowUser['fullname'];
+                $phone = $rowUser['phone'];
+                $address = $rowUser['address'];
+                $userType = $rowUser['type'];
+            }
+
+            $interestRateID = $row['interest_rate_id'];
+            $currentImage = $row['image'];
+            $price = (float) $row['price'];
+            $startDate = date("d-m-Y", strtotime($row['start_date']));
+            $endDate = date("d-m-Y", strtotime($row['end_date']));
+            $warehouseID = $row['warehouse_id'];
+        }
+    }
+}
+
 // Fetch data for select options 'interest_rates'
 $typeOptions = array();
 $sql = "SELECT * FROM interest_rates";
@@ -33,19 +62,10 @@ if ($resultStore->num_rows > 0) {
 }
 
 // Register pawn info
-if (isset($_POST["submit"])) {
-    $id = time() . mt_rand(1000, 9999);
-    $user_id = $_POST['id'];
-    $interest_rate_id = $_POST['type'];
-    $user_type = $_POST['user_type'];
-
-    $tmp_name = $_FILES["image"]["tmp_name"];
-    $data = file_get_contents($tmp_name);
-    $image = $conn->real_escape_string($data);
-
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_GET['id'])) {
+    $id = $_GET['id'];
     $price = $_POST['price'];
 
-    // Format the dates to 'YYYY-MM-DD'
     $start_date_str = $_POST['start_date'];
     $end_date_str = $_POST['end_date'];
     $formatted_start_date = DateTime::createFromFormat('d-m-Y', $start_date_str);
@@ -55,7 +75,14 @@ if (isset($_POST["submit"])) {
 
     $warehouse = $_POST['warehouse'];
 
-    $query = "INSERT INTO pawn_info VALUES ($id, $user_id, '$interest_rate_id', '$user_type', '$image', $price, '$start_date', '$end_date', '$warehouse');";
+    if (!empty($_FILES["image"]["tmp_name"])) {
+        $tmp_name = $_FILES["image"]["tmp_name"];
+        $data = file_get_contents($tmp_name);
+        $image = $conn->real_escape_string($data);
+        $query = "UPDATE pawn_info SET image = '$image', price = '$price', start_date = '$start_date', end_date = '$end_date', warehouse_id = '$warehouse' WHERE id = '$id'";
+    } else {
+        $query = "UPDATE pawn_info SET price = '$price', start_date = '$start_date', end_date = '$end_date', warehouse_id = '$warehouse' WHERE id = '$id'";
+    }
 
     if (mysqli_query($conn, $query)) {
         header("Location: /views/user/search.php");
@@ -92,7 +119,8 @@ if (isset($_SESSION['user']) && $_SESSION['user'] == 'admin') {
                     <?php
                     if (isset($_SESSION['user']) && $_SESSION['user'] == 'admin') {
                         echo '<li><a href="register_user.php">Đăng ký khách hàng</a></li>';
-                        echo '<li><a class="active" href="register_pawn_info.php">Đăng ký cầm đồ</a></li>';
+                        echo '<li><a href="register_pawn_info.php">Đăng ký cầm đồ</a></li>';
+                        echo '<li><a class="active" href="update_pawn_info.php">Cập nhật thông tin cầm đồ</a></li>';
                         echo '<li><a href="search.php">Tìm kiếm</a></li>';
                     }
                     ?>
@@ -144,30 +172,30 @@ if (isset($_SESSION['user']) && $_SESSION['user'] == 'admin') {
         <section>
             <div class="register_pawn_form">
                 <form action="" method="post" enctype="multipart/form-data">
-                    <h2>Đăng ký thông tin cầm đồ</h2>
+                    <h2>Cập nhật thông tin cầm đồ</h2>
                     <div class="input_box">
-                        <input type="text" id="input_user_id" name="id" placeholder="Nhập CMND" required oninput="checkUser()">
+                        <input type="text" id="input_user_id" name="id" placeholder="Nhập CMND" oninput="checkUser()" value="<?php echo $userId ?>" required readonly>
                         <i class="fa-solid fa-id-card input_user_id"></i>
                         <div id="error_message" style="color: red;"></div>
                     </div>
 
                     <div class="input_box">
-                        <input type="text" id="fullname" name="fullname" placeholder="Nhập họ và tên" required readonly>
+                        <input type="text" id="fullname" name="fullname" placeholder="Nhập họ và tên" value="<?php echo $fullName ?>" required readonly>
                         <i class="fa-solid fa-user fullname"></i>
                     </div>
 
                     <div class="input_box">
-                        <input type="text" id="phone" name="phone" placeholder="Nhập số điện thoại" required readonly>
+                        <input type="text" id="phone" name="phone" placeholder="Nhập số điện thoại" value="<?php echo $phone ?>" required readonly>
                         <i class="fa-solid fa-phone phone"></i>
                     </div>
 
                     <div class="input_box">
-                        <input type="text" id="address" name="address" placeholder="Nhập địa chỉ" required readonly>
+                        <input type="text" id="address" name="address" placeholder="Nhập địa chỉ" value="<?php echo $address ?>" required readonly>
                         <i class="fa-solid fa-location-dot address"></i>
                     </div>
 
                     <div class="input_box">
-                        <input type="text" id="user_type" name="user_type" placeholder="Loại khách hàng" required readonly>
+                        <input type="text" id="user_type" name="user_type" placeholder="Loại khách hàng" value="<?php echo $userType ?>" required readonly>
                         <i class="fa-solid fa-user user_type"></i>
                     </div>
 
@@ -176,7 +204,8 @@ if (isset($_SESSION['user']) && $_SESSION['user'] == 'admin') {
                             <option value="" selected hidden>Chọn loại hàng hóa</option>
                             <?php
                             foreach ($typeOptions as $option) {
-                                echo "<option value=\"{$option['id']}\" data-price=\"{$option['price']}\" data-time=\"{$option['time']}\" data-type=\"{$option['type']}\">{$option['name']}</option>";
+                                $selected = ($option['id'] == $interestRateID) ? 'selected' : '';
+                                echo "<option value=\"{$option['id']}\" data-price=\"{$option['price']}\" data-time=\"{$option['time']}\" data-type=\"{$option['type']}\" $selected>{$option['name']}</option>";
                             }
                             ?>
                         </select>
@@ -185,11 +214,14 @@ if (isset($_SESSION['user']) && $_SESSION['user'] == 'admin') {
                     <div class="upload_image">
                         <label for="image">Tải hình ảnh lên</label>
                         <input type="file" id="image" name="image" accept="image/*">
+                        <?php if (!empty($currentImage)) : ?>
+                            <img src="display_image.php?id=<?php echo $pawnInfoID; ?>" alt="Image">
+                        <?php endif; ?>
                     </div>
 
                     <div class="input_box">
-                        <input type="text" id="formatPrice" name="formatPrice" placeholder="Giá" required>
-                        <input type="hidden" id="price" name="price">
+                        <input type="text" id="formatPrice" name="formatPrice" placeholder="Giá" value="<?php echo $price ?>" required>
+                        <input type="hidden" id="price" name="price" value="<?php echo $price ?>">
                         <i class="fa-solid fa-money-check-dollar price"></i>
                     </div>
 
@@ -204,12 +236,12 @@ if (isset($_SESSION['user']) && $_SESSION['user'] == 'admin') {
                     </div>
 
                     <div class="input_box">
-                        <input type="text" id="start_date" name="start_date" placeholder="Ngày bắt đầu" required>
+                        <input type="text" id="start_date" name="start_date" placeholder="Ngày bắt đầu" value="<?php echo $startDate ?>" required>
                         <i class="fa-regular fa-calendar-days time start_date"></i>
                     </div>
 
                     <div class="input_box">
-                        <input type="text" id="end_date" name="end_date" placeholder="Ngày kết thúc" required>
+                        <input type="text" id="end_date" name="end_date" placeholder="Ngày kết thúc" value="<?php echo $endDate ?>" required>
                         <i class="fa-regular fa-calendar-days time end_date"></i>
                     </div>
 
@@ -218,13 +250,14 @@ if (isset($_SESSION['user']) && $_SESSION['user'] == 'admin') {
                             <option value="" selected hidden>Chọn kho hàng lưu trữ</option>
                             <?php
                             foreach ($warehouseOptions as $option) {
-                                echo "<option value=\"{$option['id']}\">{$option['name']}</option>";
+                                $selected = ($option['id'] == $warehouseID) ? 'selected' : '';
+                                echo "<option value=\"{$option['id']}\" $selected>{$option['name']}</option>";
                             }
                             ?>
                         </select>
                     </div>
 
-                    <button type="submit" class="button" name="submit">Đăng ký</button>
+                    <button type="submit" class="button" name="submit">Cập nhật</button>
                 </form>
             </div>
         </section>

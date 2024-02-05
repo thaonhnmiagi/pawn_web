@@ -1,26 +1,53 @@
 <?php
 session_start();
 
-if (isset($_POST["submit"])) {
-    $hostname = "localhost";
-    $username = "root";
-    $password = "";
-    $database = "webpawn";
+$hostname = "localhost";
+$username = "root";
+$password = "";
+$database = "webpawn";
 
-    // Database connection
-    $conn = new mysqli($hostname, $username, $password, $database);
-    if ($conn->connect_error) {
-        die("Connection failed: " . $conn->connect_error);
+// Database connection
+$conn = new mysqli($hostname, $username, $password, $database);
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['id'])) {
+    $pawnInfoID = $_GET['id'];
+    $sql = "SELECT * FROM pawn_info WHERE id = '$pawnInfoID'";
+    $result = $conn->query($sql);
+    if ($result->num_rows > 0) {
+        while ($row = $result->fetch_assoc()) {
+            $userId = $row['user_id'];
+
+            $sqlDetail = "SELECT * FROM pawn_product_detail WHERE user_id = '$userId' AND pawn_info_id = '$pawnInfoID'";
+            $resultDetail = $conn->query($sqlDetail);
+
+            if ($resultDetail->num_rows > 0) {
+                $rowDetail = $resultDetail->fetch_assoc();
+                $productDetail = $rowDetail['product_detail'];
+                $pawnStatus = $rowDetail['pawn_status'];
+            }
+        }
     }
+}
 
-    $id = $_POST['id'];
-    $fullname = $_POST['fullname'];
-    $phone = $_POST['phone'];
-    $address = $_POST['address'];
-    $type = $_POST['type'];
-    $password = $_POST['password'];
+// Register/Update pawn detail
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_GET['id'])) {
+    $user_id = $_POST['user_id'];
+    $pawn_info_id = $_GET['id'];
+    $product_detail = $_POST['product_detail'];
+    $pawn_status = $_POST['pawn_status'];
 
-    $query = "INSERT INTO users VALUES ($id,'$fullname','$phone','$address','$type','$password')";
+    $sqlDetail = "SELECT * FROM pawn_product_detail WHERE user_id = '$user_id' AND pawn_info_id = '$pawn_info_id'";
+    $resultDetail = $conn->query($sqlDetail);
+
+    if ($resultDetail->num_rows > 0) {
+        $query = "UPDATE pawn_product_detail SET product_detail = '$product_detail', pawn_status = '$pawn_status'";
+    } else {
+        $id = $user_id . mt_rand(1000, 9999);
+        $query = "INSERT INTO pawn_product_detail VALUES ('$id', $user_id, '$pawn_info_id', '$product_detail', '$pawn_status');";
+    }
 
     if (mysqli_query($conn, $query)) {
         header("Location: /views/user/search.php");
@@ -41,7 +68,10 @@ if (isset($_SESSION['user']) && $_SESSION['user'] == 'admin') {
         <title>Trang Web Vay, Cầm Cố</title>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
         <link rel="stylesheet" href="/web/css/style.css">
-        <link rel="stylesheet" href="/web/css/register_customer.css">
+        <link rel="stylesheet" href="/web/css/register_pawn_info.css">
+        <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+        <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     </head>
 
     <body>
@@ -53,8 +83,9 @@ if (isset($_SESSION['user']) && $_SESSION['user'] == 'admin') {
                     <li><a href="/views/home/index.php"><i class="fa-solid fa-house"></i> Trang chủ</a></li>
                     <?php
                     if (isset($_SESSION['user']) && $_SESSION['user'] == 'admin') {
-                        echo '<li><a class="active" href="register_customer.php">Đăng ký khách hàng</a></li>';
+                        echo '<li><a href="register_user.php">Đăng ký khách hàng</a></li>';
                         echo '<li><a href="register_pawn_info.php">Đăng ký cầm đồ</a></li>';
+                        echo '<li><a class="active" href="register_pawn_detail.php">Thêm chi tiết thông tin cầm đồ</a></li>';
                         echo '<li><a href="search.php">Tìm kiếm</a></li>';
                     }
                     ?>
@@ -104,44 +135,34 @@ if (isset($_SESSION['user']) && $_SESSION['user'] == 'admin') {
         </section>
 
         <section>
-            <div class="register_form">
+            <div class="register_pawn_form">
                 <form action="" method="post" enctype="multipart/form-data">
-                    <h2>Đăng ký khách hàng</h2>
+                    <h2><?php echo (!empty($productDetail)) ? 'Cập nhật' : 'Đăng ký'; ?> chi tiết thông tin cầm đồ</h2>
                     <div class="input_box">
-                        <input type="text" id="input_user_id" name="id" placeholder="Nhập CMND" required>
+                        <input type="text" id="input_user_id" name="user_id" placeholder="Nhập CMND" value="<?php echo $userId ?>" required readonly>
+                        <i class="fa-solid fa-id-card input_user_id"></i>
+                        <div id="error_message" style="color: red;"></div>
+                    </div>
+
+                    <div class="input_box">
+                        <input type="text" id="pawn_info_id" name="pawn_info_id" placeholder="Nhập CMND" value="<?php echo $pawnInfoID ?>" required readonly>
                         <i class="fa-solid fa-id-card input_user_id"></i>
                     </div>
 
                     <div class="input_box">
-                        <input type="text" id="fullname" name="fullname" placeholder="Nhập họ và tên" required>
-                        <i class="fa-solid fa-user fullname"></i>
-                    </div>
-
-                    <div class="input_box">
-                        <input type="text" id="phone" name="phone" placeholder="Nhập số điện thoại" required>
-                        <i class="fa-solid fa-phone phone"></i>
-                    </div>
-
-                    <div class="input_box">
-                        <input type="text" id="address" name="address" placeholder="Nhập địa chỉ" required>
-                        <i class="fa-solid fa-location-dot address"></i>
+                        <input type="text" id="product_detail" name="product_detail" placeholder="Nhập chi tiết cầm đồ" <?php echo (!empty($productDetail)) ? 'value="' . $productDetail . '"' : 'value=""'; ?> required>
+                        <i class="fa-solid fa-info input_user_id"></i>
                     </div>
 
                     <div class="select_box">
-                        <select name="type" id="type" required>
-                            <option value="" selected hidden>Chọn loại khách hàng</option>
-                            <option value="admin">Admin</option>
-                            <option value="customer">Customer</option>
+                        <select name="pawn_status" id="pawn_status" required>
+                            <option value="" selected>Chọn loại hàng hóa</option>
+                            <option value="0" <?php echo (isset($pawnStatus) && $pawnStatus === '0') ? 'selected' : ''; ?>>Hết thời gian gia hạn</option>
+                            <option value="1" <?php echo (isset($pawnStatus) && $pawnStatus === '1') ? 'selected' : ''; ?>>Trong thời gian gia hạn</option>
                         </select>
                     </div>
 
-                    <div class="input_box">
-                        <input type="password" id="input_password" name="password" placeholder="Nhập mật khẩu" required>
-                        <i class="fa-solid fa-lock password"></i>
-                        <i class="fa-solid fa-eye-slash password_hide"></i>
-                    </div>
-
-                    <button type="submit" class="button" name="submit">Đăng ký</button>
+                    <button type="submit" class="button" name="submit"><?php echo (!empty($productDetail)) ? 'Cập nhật' : 'Đăng ký'; ?></button>
                 </form>
             </div>
         </section>

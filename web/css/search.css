@@ -1,16 +1,17 @@
 /* Form */
-.register_pawn_form {
+.search_form {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
 }
 
-.register_pawn_form form {
+.search_form form {
     width: 70%;
 }
 
-.register_pawn_form h2 {
+.search_form h2,
+.search_form #error_message {
     text-align: center;
 }
 
@@ -49,12 +50,7 @@
 }
 
 .input_box i.input_user_id,
-.input_box i.fullname,
-.input_box i.phone,
-.input_box i.address,
-.input_box i.user_type,
-.input_box i.price,
-.input_box i.interest_rate,
+.input_box i.product,
 .input_box i.time,
 .input_box i.warehouse {
     left: 0;
@@ -62,12 +58,7 @@
 }
 
 .input_box input:focus~i.input_user_id,
-.input_box input:focus~i.fullname,
-.input_box input:focus~i.phone,
-.input_box input:focus~i.address,
-.input_box input:focus~i.user_type,
-.input_box input:focus~i.price,
-.input_box input:focus~i.interest_rate,
+.input_box input:focus~i.product,
 .input_box input:focus~i.time,
 .input_box input:focus~i.warehouse {
     color: #7D2AE8;
@@ -93,23 +84,31 @@
     font-weight: bold;
 }
 
-.register_pawn_form .button {
-    background: #7D2AE8;
-    color: #F5F5F5;
-    margin: 15px 0 30px 0;
-    width: 100%;
-    padding: 10px 0;
-    border-radius: 10px;
+/* Table */
+.search_table {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
-.upload_image {
-    padding: 0 30px;
+table {
+    border-collapse: collapse;
+    width: 80%;
+    margin: 20px;
 }
 
-.upload_image label,
-.upload_image input {
-    display: inline-block;
-    vertical-align: middle;
-    padding-top: 35px;
-    color: #707070;
+th,
+td {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+}
+
+th {
+    background-color: #f2f2f2;
+}
+
+.actions {
+    white-space: nowrap;
 }

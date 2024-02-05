@@ -1,31 +1,24 @@
 <?php
 session_start();
 
-if (isset($_POST["submit"])) {
-    $hostname = "localhost";
-    $username = "root";
-    $password = "";
-    $database = "webpawn";
+$hostname = "localhost";
+$username = "root";
+$password = "";
+$database = "webpawn";
 
-    // Database connection
-    $conn = new mysqli($hostname, $username, $password, $database);
-    if ($conn->connect_error) {
-        die("Connection failed: " . $conn->connect_error);
-    }
+// Database connection
+$conn = new mysqli($hostname, $username, $password, $database);
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
 
-    $id = $_POST['id'];
-    $fullname = $_POST['fullname'];
-    $phone = $_POST['phone'];
-    $address = $_POST['address'];
-    $type = $_POST['type'];
-    $password = $_POST['password'];
-
-    $query = "INSERT INTO users VALUES ($id,'$fullname','$phone','$address','$type','$password')";
-
-    if (mysqli_query($conn, $query)) {
-        header("Location: /views/user/search.php");
-    } else {
-        echo "Error: " . $query . "<br>" . mysqli_error($conn);
+// Fetch data for select options 'interest_rates'
+$typeOptions = array();
+$sql = "SELECT * FROM interest_rates";
+$resultSelect = $conn->query($sql);
+if ($resultSelect->num_rows > 0) {
+    while ($row = $resultSelect->fetch_assoc()) {
+        $typeOptions[] = $row;
     }
 }
 
@@ -41,7 +34,11 @@ if (isset($_SESSION['user']) && $_SESSION['user'] == 'admin') {
         <title>Trang Web Vay, Cầm Cố</title>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
         <link rel="stylesheet" href="/web/css/style.css">
-        <link rel="stylesheet" href="/web/css/register_customer.css">
+        <link rel="stylesheet" href="/web/css/search.css">
+        <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+        <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
     </head>
 
     <body>
@@ -53,9 +50,9 @@ if (isset($_SESSION['user']) && $_SESSION['user'] == 'admin') {
                     <li><a href="/views/home/index.php"><i class="fa-solid fa-house"></i> Trang chủ</a></li>
                     <?php
                     if (isset($_SESSION['user']) && $_SESSION['user'] == 'admin') {
-                        echo '<li><a class="active" href="register_customer.php">Đăng ký khách hàng</a></li>';
+                        echo '<li><a href="register_user.php">Đăng ký khách hàng</a></li>';
                         echo '<li><a href="register_pawn_info.php">Đăng ký cầm đồ</a></li>';
-                        echo '<li><a href="search.php">Tìm kiếm</a></li>';
+                        echo '<li><a class="active" href="search.php">Tìm kiếm</a></li>';
                     }
                     ?>
                     <li><a href="about.html">Về chúng tôi</a></li>
@@ -79,12 +76,12 @@ if (isset($_SESSION['user']) && $_SESSION['user'] == 'admin') {
                     <form action="/views/auths/auth/login.php" method="post">
                         <h2>Đăng nhập</h2>
                         <div class="input_box">
-                            <input type="text" id="id" name="id" placeholder="Nhập CMND" required>
+                            <input type="text" id="id" name="id" placeholder="Nhập CMND">
                             <i class="fa-solid fa-id-card user_id"></i>
                         </div>
 
                         <div class="input_box">
-                            <input type="password" id="password" name="password" placeholder="Nhập mật khẩu" required>
+                            <input type="password" id="password" name="password" placeholder="Nhập mật khẩu">
                             <i class="fa-solid fa-lock password"></i>
                             <i class="fa-solid fa-eye-slash password_hide"></i>
                         </div>
@@ -104,45 +101,73 @@ if (isset($_SESSION['user']) && $_SESSION['user'] == 'admin') {
         </section>
 
         <section>
-            <div class="register_form">
+            <div class="search_form">
                 <form action="" method="post" enctype="multipart/form-data">
-                    <h2>Đăng ký khách hàng</h2>
+                    <h2>Tìm kiếm thông tin cầm đồ</h2>
+                    <div id="error_message" style="color: red;"></div>
                     <div class="input_box">
-                        <input type="text" id="input_user_id" name="id" placeholder="Nhập CMND" required>
+                        <input type="text" id="input_pawn_id" name="id" placeholder="Nhập ID của món hàng" oninput="searchInfo()">
                         <i class="fa-solid fa-id-card input_user_id"></i>
                     </div>
 
                     <div class="input_box">
-                        <input type="text" id="fullname" name="fullname" placeholder="Nhập họ và tên" required>
-                        <i class="fa-solid fa-user fullname"></i>
-                    </div>
-
-                    <div class="input_box">
-                        <input type="text" id="phone" name="phone" placeholder="Nhập số điện thoại" required>
-                        <i class="fa-solid fa-phone phone"></i>
-                    </div>
-
-                    <div class="input_box">
-                        <input type="text" id="address" name="address" placeholder="Nhập địa chỉ" required>
-                        <i class="fa-solid fa-location-dot address"></i>
+                        <input type="text" id="input_user_id" name="id" placeholder="Nhập CMND" oninput="searchInfo()">
+                        <i class="fa-solid fa-id-card input_user_id"></i>
                     </div>
 
                     <div class="select_box">
-                        <select name="type" id="type" required>
-                            <option value="" selected hidden>Chọn loại khách hàng</option>
-                            <option value="admin">Admin</option>
-                            <option value="customer">Customer</option>
+                        <select name="type" id="type" onchange="searchInfo()">
+                            <option value="" selected hidden>Chọn loại hàng hóa</option>
+                            <?php
+                            foreach ($typeOptions as $option) {
+                                echo "<option value=\"{$option['id']}\" data-price=\"{$option['price']}\" data-time=\"{$option['time']}\" data-type=\"{$option['type']}\">{$option['name']}</option>";
+                            }
+                            ?>
                         </select>
                     </div>
 
                     <div class="input_box">
-                        <input type="password" id="input_password" name="password" placeholder="Nhập mật khẩu" required>
-                        <i class="fa-solid fa-lock password"></i>
-                        <i class="fa-solid fa-eye-slash password_hide"></i>
+                        <input type="text" id="product_detail" name="id" placeholder="Nhập chi tiết sản phẩm" oninput="searchInfo()">
+                        <i class="fa-solid fa-gift product"></i>
                     </div>
 
-                    <button type="submit" class="button" name="submit">Đăng ký</button>
+                    <div class="input_box">
+                        <input type="text" id="start_date" name="start_date" placeholder="Ngày bắt đầu" oninput="searchInfo()">
+                        <i class="fa-regular fa-calendar-days time start_date"></i>
+                    </div>
+
+                    <div class="input_box">
+                        <input type="text" id="end_date" name="end_date" placeholder="Ngày kết thúc" oninput="searchInfo()">
+                        <i class="fa-regular fa-calendar-days time end_date"></i>
+                    </div>
+
+                    <div class="input_box">
+                        <input type="text" id="pawn_status" name="id" placeholder="Nhập trạng thái sản phẩm" oninput="searchInfo()">
+                        <i class="fa-solid fa-gift product"></i>
+                    </div>
                 </form>
+            </div>
+
+            <div class="search_table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Loại hàng hóa</th>
+                            <th>Chi tiết sản phẩm</th>
+                            <th>Giá cầm</th>
+                            <th>Thuế cầm</th>
+                            <th>Thời gian cầm</th>
+                            <th>Ngày bắt đầu</th>
+                            <th>Ngày hết hạn</th>
+                            <th>Trạng thái sản phẩm</th>
+                            <th>Kho giữ hàng</th>
+                            <th class="actions">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
             </div>
         </section>
 
@@ -174,6 +199,7 @@ if (isset($_SESSION['user']) && $_SESSION['user'] == 'admin') {
         </footer>
 
         <script src="/web/js/script.js"></script>
+        <script src="/web/js/search.js"></script>
     </body>
 
     </html>
