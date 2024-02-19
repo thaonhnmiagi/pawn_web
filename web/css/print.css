@@ -1,0 +1,12 @@
+.search_form, .section-p1, .login, .print-button-container, .logo, .navbar-header, .close-preview-button{
+    display: none;
+}
+
+.dialog-content{
+    border-radius: 0px;
+    box-shadow: none;
+}
+
+.dialog-overlay{
+    display: block;
+}

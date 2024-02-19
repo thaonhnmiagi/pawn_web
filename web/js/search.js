@@ -13,7 +13,27 @@ $(document).ready(function () {
             searchInfo();
         }
     });
+
+    document.getElementById('printToPaper').addEventListener('click', function() {
+        window.print();
+    });
+
+    document.getElementById('previewPrint').addEventListener('click', openPrintDialog);
+
+    document.getElementById('closePreview').addEventListener('click', closePreviewDialog);
 });
+
+function openPrintDialog() {
+    var table = document.getElementById('searchTable');
+    var previewTable = document.getElementById('previewTable');
+    previewTable.innerHTML = table.innerHTML;
+
+    document.getElementById('printDialog').classList.remove('hidden');
+}
+
+function closePreviewDialog() {
+    document.getElementById('printDialog').classList.add('hidden');
+}
 
 function formatDate(inputDate) {
     var parts = inputDate.split("-");
