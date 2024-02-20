@@ -12,8 +12,8 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['id'])) {
-    $pawnInfoID = $_GET['id'];
+if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['pawnInfoID'])) {
+    $pawnInfoID = $_GET['pawnInfoID'];
     $sql = "SELECT * FROM pawn_info WHERE id = '$pawnInfoID'";
     $result = $conn->query($sql);
     if ($result->num_rows > 0) {
@@ -34,10 +34,13 @@ if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['id'])) {
             $interestRateID = $row['interest_rate_id'];
             $currentImage = $row['image'];
             $price = (float) $row['price'];
+            $interest_rate = $row['interest_rate_price'];
             $startDate = date("d-m-Y", strtotime($row['start_date']));
             $endDate = date("d-m-Y", strtotime($row['end_date']));
+            $extendDate = $row['extend_date'] != '0000-00-00 00:00:00' ? date("d-m-Y", strtotime($row['extend_date'])) : '00-00-0000';
             $warehouseID = $row['warehouse_id'];
         }
+        $isFirstLoad = true;
     }
 }
 
@@ -61,17 +64,23 @@ if ($resultStore->num_rows > 0) {
     }
 }
 
-// Register pawn info
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_GET['id'])) {
-    $id = $_GET['id'];
+// Update pawn info
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_GET['userID']) && isset($_GET['pawnInfoID'])) {
+    $pawn_info_id = $_GET['pawnInfoID'];
+    $user_id = $_GET['userID'];
+    $interest_rate_id = $_POST['type'];
     $price = $_POST['price'];
+    $interest_rate_price = $_POST['interest_rate'];
 
     $start_date_str = $_POST['start_date'];
     $end_date_str = $_POST['end_date'];
+    $extend_date_str = $_POST['extend_date'];
     $formatted_start_date = DateTime::createFromFormat('d-m-Y', $start_date_str);
     $formatted_end_date = DateTime::createFromFormat('d-m-Y', $end_date_str);
+    $formatted_extend_date = DateTime::createFromFormat('d-m-Y', $extend_date_str);
     $start_date = $formatted_start_date->format('Y-m-d');
     $end_date = $formatted_end_date->format('Y-m-d');
+    $extend_date = $formatted_extend_date->format('Y-m-d');
 
     $warehouse = $_POST['warehouse'];
 
@@ -79,13 +88,29 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_GET['id'])) {
         $tmp_name = $_FILES["image"]["tmp_name"];
         $data = file_get_contents($tmp_name);
         $image = $conn->real_escape_string($data);
-        $query = "UPDATE pawn_info SET image = '$image', price = '$price', start_date = '$start_date', end_date = '$end_date', warehouse_id = '$warehouse' WHERE id = '$id'";
+        $query = "UPDATE pawn_info SET interest_rate_id = '$interest_rate_id', image = '$image', price = '$price', interest_rate_price = '$interest_rate_price', start_date = '$start_date', end_date = '$end_date', extend_date = '$extend_date', warehouse_id = '$warehouse' WHERE id = '$pawn_info_id'";
     } else {
-        $query = "UPDATE pawn_info SET price = '$price', start_date = '$start_date', end_date = '$end_date', warehouse_id = '$warehouse' WHERE id = '$id'";
+        $query = "UPDATE pawn_info SET interest_rate_id = '$interest_rate_id', price = '$price', interest_rate_price = '$interest_rate_price', start_date = '$start_date', end_date = '$end_date', extend_date = '$extend_date', warehouse_id = '$warehouse' WHERE id = '$pawn_info_id'";
     }
 
     if (mysqli_query($conn, $query)) {
-        header("Location: /views/user/search.php");
+        $pawn_detail_id = '';
+        $pawn_status = 1; // 0: Hết thời gian gia hạn, 1: Trong thời gian gia hạn, 2: đã (xóa) trả hàng và thanh toán
+        $sqlDetail = "SELECT * FROM pawn_product_detail WHERE user_id = '$user_id' AND pawn_info_id = '$pawn_info_id'";
+        $resultDetail = $conn->query($sqlDetail);
+        if ($resultDetail->num_rows > 0) {
+            $rowDetail = $resultDetail->fetch_assoc();
+            $pawn_detail_id = $rowDetail['id'];
+            $pawn_status = $rowDetail['pawn_status'];
+        }
+
+        $history_id = time() . mt_rand(1000, 9999);
+        $queryHistory = "INSERT INTO history VALUES ($history_id, $user_id, '$pawn_info_id', '$pawn_detail_id', '$interest_rate_id', $pawn_status, '$start_date', '$end_date', '$extend_date', $price, '$interest_rate_price', '');";
+        if (mysqli_query($conn, $queryHistory)) {
+            header("Location: /views/user/search.php");
+        } else {
+            echo "Error: " . $queryHistory . "<br>" . mysqli_error($conn);
+        }
     } else {
         echo "Error: " . $query . "<br>" . mysqli_error($conn);
     }
@@ -226,7 +251,7 @@ if (isset($_SESSION['user']) && $_SESSION['user'] == 'admin') {
                     </div>
 
                     <div class="input_box">
-                        <input type="text" id="interest_rate" name="interest_rate" placeholder="Thuế cầm" required>
+                        <input type="text" id="interest_rate" name="interest_rate" placeholder="Thuế cầm" value="<?php echo $interest_rate ?>" required>
                         <i class="fa-solid fa-money-check-dollar interest_rate"></i>
                     </div>
 
@@ -245,6 +270,11 @@ if (isset($_SESSION['user']) && $_SESSION['user'] == 'admin') {
                         <i class="fa-regular fa-calendar-days time end_date"></i>
                     </div>
 
+                    <div class="input_box" id="extend_date_container" style="display: none;">
+                        <input type="text" id="extend_date" name="extend_date" placeholder="Ngày gia hạn" value="<?php echo $extendDate ?>" required>
+                        <i class="fa-regular fa-calendar-days time"></i>
+                    </div>
+
                     <div class="select_box">
                         <select name="warehouse" id="warehouse" required>
                             <option value="" selected hidden>Chọn kho hàng lưu trữ</option>
@@ -257,7 +287,10 @@ if (isset($_SESSION['user']) && $_SESSION['user'] == 'admin') {
                         </select>
                     </div>
 
-                    <button type="submit" class="button" name="submit">Cập nhật</button>
+                    <div class="inline-buttons">
+                        <button type="submit" class="button" name="submit">Cập nhật</button>
+                        <button type="button" class="button" name="add_button" onclick="toggleExtendDate()">Thêm thời gian gia hạn</button>
+                    </div>
                 </form>
             </div>
         </section>
@@ -317,6 +350,12 @@ if (isset($_SESSION['user']) && $_SESSION['user'] == 'admin') {
                         }
                     }
                 })
+            }
+            var isFirstLoad = <?php echo json_encode($isFirstLoad); ?>;
+
+            function toggleExtendDate() {
+                var extendDateContainer = document.getElementById("extend_date_container");
+                extendDateContainer.style.display = (extendDateContainer.style.display === "none") ? "block" : "none";
             }
         </script>
 

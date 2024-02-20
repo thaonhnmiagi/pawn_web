@@ -102,6 +102,11 @@
     border-radius: 10px;
 }
 
+.inline-buttons {
+    display: flex;
+    justify-content: space-between;
+}
+
 .upload_image {
     padding: 0 30px;
 }

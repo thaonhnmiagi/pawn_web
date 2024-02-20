@@ -12,63 +12,6 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Fetch data for select options 'interest_rates'
-$typeOptions = array();
-$sql = "SELECT * FROM interest_rates";
-$resultSelect = $conn->query($sql);
-if ($resultSelect->num_rows > 0) {
-    while ($row = $resultSelect->fetch_assoc()) {
-        $typeOptions[] = $row;
-    }
-}
-
-if (isset($_GET['pawnDetailID']) || isset($_GET['pawnInfoID'])) {
-    $pawn_detail_id = $_GET['pawnDetailID'];
-    $pawn_info_id = $_GET['pawnInfoID'];
-    $pawn_status = 2; // 0: Hết thời gian gia hạn, 1: Trong thời gian gia hạn, 2: đã (xóa) trả hàng và thanh toán
-
-    $sqlPawnInfo = "SELECT * FROM pawn_info WHERE id = '$pawn_info_id'";
-    $result = $conn->query($sqlPawnInfo);
-    if ($result->num_rows > 0) {
-        $row = $result->fetch_assoc();
-        $user_id = $row['user_id'];
-        $interest_rate_id = $row['interest_rate_id'];
-        $start_date = $row['start_date'];
-        $end_date =  $row['end_date'];
-        $extend_date = $row['extend_date'];
-        $price = $row['price'];
-        $interest_rate_price = $row['interest_rate_price'];
-
-        if ($pawn_detail_id) {
-            $sqlPawnDetail = "DELETE FROM pawn_product_detail WHERE id = '$pawn_detail_id'";
-
-            if (mysqli_query($conn, $sqlPawnDetail)) {
-                deletePawnInfoAndInsertHistory($conn, $user_id, $pawn_info_id, $pawn_detail_id, $interest_rate_id, $pawn_status, $start_date, $end_date, $extend_date, $price, $interest_rate_price, '');
-            } else {
-                echo "Error: " . $sqlPawnDetail . "<br>" . mysqli_error($conn);
-            }
-        } else {
-            deletePawnInfoAndInsertHistory($conn, $user_id, $pawn_info_id, $pawn_detail_id, $interest_rate_id, $pawn_status, $start_date, $end_date, $extend_date, $price, $interest_rate_price, '');
-        }
-    }
-}
-
-function deletePawnInfoAndInsertHistory($conn, $user_id, $pawn_info_id, $pawn_detail_id, $interest_rate_id, $pawn_status, $start_date, $end_date, $extend_date, $price, $interest_rate_price)
-{
-    $sql = "DELETE FROM pawn_info WHERE id = '$pawn_info_id'";
-    if (mysqli_query($conn, $sql)) {
-        $history_id = time() . mt_rand(1000, 9999);
-        $queryHistory = "INSERT INTO history VALUES ($history_id, $user_id, '$pawn_info_id', '$pawn_detail_id', '$interest_rate_id', $pawn_status, '$start_date', '$end_date', '$extend_date', $price, '$interest_rate_price', '');";
-        if (mysqli_query($conn, $queryHistory)) {
-            header("Location: /views/user/search.php");
-        } else {
-            echo "Error: " . $queryHistory . "<br>" . mysqli_error($conn);
-        }
-    } else {
-        echo "Error: " . $sql . "<br>" . mysqli_error($conn);
-    }
-}
-
 if (isset($_SESSION['user']) && $_SESSION['user'] == 'admin') {
 ?>
     <!DOCTYPE html>
@@ -81,8 +24,7 @@ if (isset($_SESSION['user']) && $_SESSION['user'] == 'admin') {
         <title>Trang Web Vay, Cầm Cố</title>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
         <link rel="stylesheet" href="/web/css/style.css">
-        <link rel="stylesheet" href="/web/css/search.css">
-        <link rel="stylesheet" type="text/css" href="/web/css/print.css" media="print">
+        <link rel="stylesheet" href="/web/css/history.css">
         <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
         <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
         <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
@@ -93,14 +35,15 @@ if (isset($_SESSION['user']) && $_SESSION['user'] == 'admin') {
         <section id="header">
             <a href="#"><img src="/web/img/logo.png" class="logo" alt=""></a>
 
-            <div class="navbar-header">
+            <div>
                 <ul id="navbar">
                     <li><a href="/views/home/index.php"><i class="fa-solid fa-house"></i> Trang chủ</a></li>
                     <?php
                     if (isset($_SESSION['user']) && $_SESSION['user'] == 'admin') {
                         echo '<li><a href="register_user.php">Đăng ký khách hàng</a></li>';
                         echo '<li><a href="register_pawn_info.php">Đăng ký cầm đồ</a></li>';
-                        echo '<li><a class="active" href="search.php">Tìm kiếm</a></li>';
+                        echo '<li><a class="active" href="history.php">Lịch sử</a></li>';
+                        echo '<li><a href="search.php">Tìm kiếm</a></li>';
                     }
                     ?>
                     <li><a href="about.html">Về chúng tôi</a></li>
@@ -149,7 +92,7 @@ if (isset($_SESSION['user']) && $_SESSION['user'] == 'admin') {
         </section>
 
         <section>
-            <div class="search_form">
+            <!-- <div class="search_form">
                 <form action="" method="post" enctype="multipart/form-data">
                     <h2>Tìm kiếm thông tin cầm đồ</h2>
                     <div id="error_message" style="color: red;"></div>
@@ -194,54 +137,72 @@ if (isset($_SESSION['user']) && $_SESSION['user'] == 'admin') {
                         <i class="fa-solid fa-gift product"></i>
                     </div>
                 </form>
-            </div>
+            </div> -->
 
-            <div class="search_table">
-                <div class="print-button-container">
-                    <button id="previewPrint">In hóa đơn</button>
-                </div>
-
-                <table id="searchTable">
+            <div class="history_table">
+                <table>
                     <thead>
                         <tr>
                             <th>ID</th>
+                            <th>User ID</th>
                             <th>Loại hàng hóa</th>
                             <th>Chi tiết sản phẩm</th>
                             <th>Giá cầm</th>
                             <th>Thuế cầm</th>
-                            <th>Thời gian cầm</th>
+                            <th>Trạng thái sản phẩm</th>
                             <th>Ngày bắt đầu</th>
                             <th>Ngày hết hạn</th>
-                            <th>Trạng thái sản phẩm</th>
+                            <th>Ngày gia hạn</th>
                             <th>Kho giữ hàng</th>
-                            <th class="actions">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>
+                        <?php
+                        if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['userID']) && isset($_GET['pawnInfoID'])) {
+                            $user_id = $_GET['userID'];
+                            $pawn_info_id = $_GET['pawnInfoID'];
+                            $sql = "SELECT history.*, pawn_info.warehouse_id, interest_rates.name";
+
+                            if (isset($_GET['pawnDetailID']) && !empty($_GET['pawnDetailID'])) {
+                                $sql .= ", pawn_product_detail.product_detail
+                                FROM history
+                                JOIN pawn_info ON history.pawn_info_id = pawn_info.id
+                                JOIN interest_rates ON history.interest_rate_id = interest_rates.id
+                                LEFT JOIN pawn_product_detail ON history.pawn_detail_id = pawn_product_detail.id
+                                WHERE history.user_id = '$user_id' AND history.pawn_info_id = '$pawn_info_id';";
+                            } else {
+                                $sql .= " FROM history
+                                JOIN pawn_info ON history.pawn_info_id = pawn_info.id
+                                JOIN interest_rates ON history.interest_rate_id = interest_rates.id
+                                WHERE history.user_id = '$user_id' AND history.pawn_info_id = '$pawn_info_id';";
+                            }
+
+                            $result = $conn->query($sql);
+                            if ($result->num_rows > 0) {
+                                while ($row = $result->fetch_assoc()) {
+                                    $start_date = date("d-m-Y", strtotime($row['start_date']));
+                                    $end_date = date("d-m-Y", strtotime($row['end_date']));
+                                    $extend_date = $row['extend_date'] != '0000-00-00 00:00:00' ? date("d-m-Y", strtotime($row['extend_date'])) : '00-00-0000';
+
+                                    echo '<tr>';
+                                    echo '<td>' . $row['id'] . '</td>';
+                                    echo '<td>' . $row['user_id'] . '</td>';
+                                    echo '<td>' . $row['name'] . '</td>';
+                                    echo '<td>' . (!empty($_GET['pawnDetailID']) ? $row['product_detail'] : '') . '</td>';
+                                    echo '<td>' . $row['price'] . '</td>';
+                                    echo '<td>' . $row['interest_rate_price'] . '</td>';
+                                    echo '<td>' . ($row['status'] === '0' ? 'Hết thời gian gia hạn' : ($row['status'] === '1' ? 'Trong thời gian gia hạn' : 'Đã trả hàng và thanh toán')) . '</td>';
+                                    echo '<td>' . $start_date . '</td>';
+                                    echo '<td>' . $end_date . '</td>';
+                                    echo '<td>' . $extend_date . '</td>';
+                                    echo '<td>' . $row['warehouse_id'] . '</td>';
+                                    echo '</tr>';
+                                }
+                            }
+                        }
+                        ?>
                     </tbody>
                 </table>
-            </div>
-
-            <div id="printDialog" class="dialog-overlay hidden">
-            <div class="dialog-content">
-                <button id="closePreview" class="close-preview-button">
-                    <i class="fas fa-times"></i>
-                </button>
-                <table id="previewTable" class="preview-table">
-                </table>
-                <div class="print-button-container" style="width: 100%;">
-                    <button id="printToPaper">In hóa đơn</button>
-                </div>
-            </div>
-            </div>
-
-            <div id="confirmationModal" class="modal" style="display: none;">
-                <div class="modal-content">
-                    <i class="fa-solid fa-xmark close"></i>
-                    <p>Bạn có chắc chắn muốn xóa thông tin cầm đồ này?</p>
-                    <button id="confirmDelete">Có</button>
-                    <button id="cancelDelete">Không</button>
-                </div>
             </div>
         </section>
 
@@ -273,7 +234,6 @@ if (isset($_SESSION['user']) && $_SESSION['user'] == 'admin') {
         </footer>
 
         <script src="/web/js/script.js"></script>
-        <script src="/web/js/search.js"></script>
     </body>
 
     </html>

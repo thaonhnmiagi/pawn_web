@@ -38,19 +38,40 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_GET['id'])) {
     $pawn_info_id = $_GET['id'];
     $product_detail = $_POST['product_detail'];
     $pawn_status = $_POST['pawn_status'];
+    $pawn_detail_id = '';
 
     $sqlDetail = "SELECT * FROM pawn_product_detail WHERE user_id = '$user_id' AND pawn_info_id = '$pawn_info_id'";
     $resultDetail = $conn->query($sqlDetail);
 
     if ($resultDetail->num_rows > 0) {
-        $query = "UPDATE pawn_product_detail SET product_detail = '$product_detail', pawn_status = '$pawn_status'";
+        $pawn_detail_id = $resultDetail->fetch_assoc()['id'];
+        $query = "UPDATE pawn_product_detail SET product_detail = '$product_detail', pawn_status = '$pawn_status' WHERE user_id = '$user_id' AND pawn_info_id = '$pawn_info_id'";
     } else {
-        $id = $user_id . mt_rand(1000, 9999);
-        $query = "INSERT INTO pawn_product_detail VALUES ('$id', $user_id, '$pawn_info_id', '$product_detail', '$pawn_status');";
+        $pawn_detail_id = $user_id . mt_rand(1000, 9999);
+        $query = "INSERT INTO pawn_product_detail VALUES ('$pawn_detail_id', $user_id, '$pawn_info_id', '$product_detail', '$pawn_status');";
     }
 
     if (mysqli_query($conn, $query)) {
-        header("Location: /views/user/search.php");
+        $sql = "SELECT * FROM pawn_info WHERE id = '$pawn_info_id'";
+        $result = $conn->query($sql);
+        if ($result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                $interest_rate_id = $row['interest_rate_id'];
+                $start_date = $row['start_date'];
+                $end_date = $row['end_date'];
+                $price = $row['price'];
+                $interest_rate_price = $row['interest_rate_price'];
+
+                $history_id = time() . mt_rand(1000, 9999);
+                $queryHistory = "INSERT INTO history VALUES ($history_id, $user_id, '$pawn_info_id', '$pawn_detail_id', '$interest_rate_id', $pawn_status, '$start_date', '$end_date', '', $price, '$interest_rate_price', '');";
+
+                if (mysqli_query($conn, $queryHistory)) {
+                    header("Location: /views/user/search.php");
+                } else {
+                    echo "Error: " . $queryHistory . "<br>" . mysqli_error($conn);
+                }
+            }
+        }
     } else {
         echo "Error: " . $query . "<br>" . mysqli_error($conn);
     }
@@ -85,7 +106,11 @@ if (isset($_SESSION['user']) && $_SESSION['user'] == 'admin') {
                     if (isset($_SESSION['user']) && $_SESSION['user'] == 'admin') {
                         echo '<li><a href="register_user.php">Đăng ký khách hàng</a></li>';
                         echo '<li><a href="register_pawn_info.php">Đăng ký cầm đồ</a></li>';
-                        echo '<li><a class="active" href="register_pawn_detail.php">Thêm chi tiết thông tin cầm đồ</a></li>';
+                        if (!empty($productDetail)) {
+                            echo '<li><a class="active" href="register_pawn_detail.php">Cập nhật chi tiết thông tin cầm đồ</a></li>';
+                        } else {
+                            echo '<li><a class="active" href="register_pawn_detail.php">Thêm chi tiết thông tin cầm đồ</a></li>';
+                        }
                         echo '<li><a href="search.php">Tìm kiếm</a></li>';
                     }
                     ?>

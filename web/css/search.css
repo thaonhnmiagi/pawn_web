@@ -156,3 +156,56 @@ th {
     border: none;
     background: none;
   }
+
+th.actions {
+    text-align: center;
+}
+
+/* Confirm delete */
+#confirmationModal {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    opacity: 1;
+    pointer-events: auto;
+    transform: translate(-50%, -50%) scale(1);
+    background-color: #FFF;
+    border: 2px solid #333;
+    border-radius: 12px;
+    box-shadow: rgba(0, 0, 0, 0.1);
+    padding: 25px;
+    z-index: 101;
+}
+
+.modal-content {
+    font-size: 20px;
+    color: #222;
+    text-align: center;
+}
+
+.close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: #222;
+    font-size: 20px;
+    opacity: 0.7;
+    cursor: pointer;
+}
+
+#confirmDelete,
+#cancelDelete {
+    background-color: #7D2AE8;
+    color: #fff;
+    padding: 10px 20px;
+    margin: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#confirmDelete:hover,
+#cancelDelete:hover {
+    background-color: #0056b3;
+}

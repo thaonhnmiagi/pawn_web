@@ -70,6 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $userID = $row['user_id'];
 
             if (isset($row['product_detail'])) {
+                $pawnDetailID = $row['pawn_detail_id'];
                 $productDetail = $row['product_detail'];
                 $pawnStatus = $row['pawn_status'];
             } else {
@@ -78,10 +79,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 if ($resultPawnDetail->num_rows > 0) {
                     while ($rowDetail = $resultPawnDetail->fetch_assoc()) {
+                        $pawnDetailID = $rowDetail['id'];
                         $productDetail = $rowDetail['product_detail'];
                         $pawnStatus = $rowDetail['pawn_status'];
                     }
                 } else {
+                    $pawnDetailID = '';
                     $productDetail = '';
                     $pawnStatus = '';
                 }
@@ -89,10 +92,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $response[] = array(
                 'id' => $pawnID,
+                'user_id' => $userID,
                 'interest_rate_name' => $rowInterestRates['name'],
+                'pawn_detail_id' => $pawnDetailID,
                 'product_detail' => $productDetail,
                 'price' => (float) $row['price'],
-                'interest_rate_price' => $rowInterestRates['price'],
+                'interest_rate_price' => $row['interest_rate_price'],
                 'interest_rate_time' => $rowInterestRates['time'],
                 'start_date' => $row['start_date'],
                 'end_date' => $row['end_date'],

@@ -12,6 +12,7 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
+$isFirstLoad = false; // Do not load price according to select
 // Fetch data for select options 'interest_rates'
 $typeOptions = array();
 $sql = "SELECT * FROM interest_rates";
@@ -44,6 +45,7 @@ if (isset($_POST["submit"])) {
     $image = $conn->real_escape_string($data);
 
     $price = $_POST['price'];
+    $interest_rate_price = $_POST['interest_rate'];
 
     // Format the dates to 'YYYY-MM-DD'
     $start_date_str = $_POST['start_date'];
@@ -52,13 +54,21 @@ if (isset($_POST["submit"])) {
     $formatted_end_date = DateTime::createFromFormat('d-m-Y', $end_date_str);
     $start_date = $formatted_start_date->format('Y-m-d');
     $end_date = $formatted_end_date->format('Y-m-d');
+    $extend_date = null;
 
     $warehouse = $_POST['warehouse'];
 
-    $query = "INSERT INTO pawn_info VALUES ($id, $user_id, '$interest_rate_id', '$user_type', '$image', $price, '$start_date', '$end_date', '$warehouse');";
+    $query = "INSERT INTO pawn_info VALUES ($id, $user_id, '$interest_rate_id', '$user_type', '$image', $price, '$interest_rate_price', '$start_date', '$end_date', '$extend_date', '$warehouse');";
 
     if (mysqli_query($conn, $query)) {
-        header("Location: /views/user/search.php");
+        $history_id = time() . mt_rand(1000, 9999);
+        $status = 1; // 0: Hết thời gian gia hạn, 1: Trong thời gian gia hạn, 2: đã (xóa) trả hàng và thanh toán
+        $queryHistory = "INSERT INTO history VALUES ($history_id, $user_id, $id, '', '$interest_rate_id', $status, '$start_date', '$end_date', '', $price, '$interest_rate_price', '');";
+        if (mysqli_query($conn, $queryHistory)) {
+            header("Location: /views/user/search.php");
+        } else {
+            echo "Error: " . $queryHistory . "<br>" . mysqli_error($conn);
+        }
     } else {
         echo "Error: " . $query . "<br>" . mysqli_error($conn);
     }
@@ -285,6 +295,7 @@ if (isset($_SESSION['user']) && $_SESSION['user'] == 'admin') {
                     }
                 })
             }
+            var isFirstLoad = <?php echo json_encode($isFirstLoad); ?>;
         </script>
 
         <script src="/web/js/script.js"></script>

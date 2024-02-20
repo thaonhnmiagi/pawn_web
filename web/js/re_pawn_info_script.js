@@ -11,6 +11,7 @@ $(document).ready(function () {
 
     $("#start_date").datepicker({ dateFormat: 'dd-mm-yy' });
     $("#end_date").datepicker({ dateFormat: 'dd-mm-yy' });
+    $("#extend_date").datepicker({ dateFormat: 'dd-mm-yy' });
 
     // Set event listener for start_date input change
     $("#start_date").on("change", function () {
@@ -34,7 +35,13 @@ function updateFields() {
     var timeValue = selectedOption.getAttribute('data-type');
 
     // load price,time fields according to select
-    priceInput.value = selectedOption.getAttribute("data-price");
+    if (priceInput.value && isFirstLoad) {
+        priceInput.value = priceInput.value;
+        isFirstLoad = false;
+    } else {
+        priceInput.value = selectedOption.getAttribute("data-price");
+    }
+
     var time = selectedOption.getAttribute("data-time");
     timeInput.value = time ? selectedOption.getAttribute("data-time") + " tháng" : "";
 

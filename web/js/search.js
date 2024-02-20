@@ -41,6 +41,39 @@ function formatDate(inputDate) {
     return formattedDate;
 }
 
+// Add a new function to show the confirmation modal
+function showConfirmationModal(pawnInfoID, pawnDetailID) {
+    $('#confirmationModal').show();
+
+    // Handle 'Yes' button click
+    $('#confirmDelete').on('click', function () {
+        window.location.href = 'search.php?pawnInfoID=' + pawnInfoID + '&pawnDetailID=' + pawnDetailID;
+        $('#confirmationModal').hide();
+    });
+
+    // Handle 'Cancel' button click
+    $('#cancelDelete').on('click', function () {
+        $('#confirmationModal').hide();
+    });
+
+    // Handle modal close button click
+    $('.close').on('click', function () {
+        $('#confirmationModal').hide();
+    });
+}
+
+function closeConfirmationModal() {
+    $('#confirmationModal').hide();
+}
+
+function formatDate(inputDate) {
+    var date = new Date(inputDate);
+    var formattedDate = ('0' + date.getDate()).slice(-2) + '-' +
+        ('0' + (date.getMonth() + 1)).slice(-2) + '-' +
+        date.getFullYear();
+    return formattedDate;
+}
+
 function searchInfo() {
     var pawnIdValue = $('#input_pawn_id').val();
     var userIdValue = $('#input_user_id').val();
@@ -80,6 +113,8 @@ function searchInfo() {
                     for (var i = 0; i < data.length; i++) {
                         var row = data[i];
                         var status = row.pawn_status === '0' ? 'Hết thời gian gia hạn' : 'Trong thời gian gia hạn';;
+                        var start_date = formatDate(row.start_date);
+                        var end_date = formatDate(row.end_date);
 
                         var newRow = '<tr>' +
                             '<td>' + row.id + '</td>' +
@@ -88,14 +123,15 @@ function searchInfo() {
                             '<td>' + row.price + '</td>' +
                             '<td>' + row.interest_rate_price + '</td>' +
                             '<td>' + row.interest_rate_time + ' tháng' + '</td>' +
-                            '<td>' + row.start_date + '</td>' +
-                            '<td>' + row.end_date + '</td>' +
+                            '<td>' + start_date + '</td>' +
+                            '<td>' + end_date + '</td>' +
                             '<td>' + status + '</td>' +
                             '<td>' + row.warehouse_id + '</td>' +
                             '<td class="actions">' +
-                            '<a href="update_pawn_info.php?id=' + row.id + '">Cập nhật</a> ' +
-                            '<a href="register_pawn_detail.php?id=' + row.id + '">' + (row.product_detail ? 'Cập nhật chi tiết' : 'Thêm chi tiết') + '</a> ' +
-                            '<a href="delete_product.php?id=' + row.id + '">Xóa</a>' +
+                            '<button type="button" onclick="window.location.href=\'update_pawn_info.php?userID=' + row.user_id + '&pawnInfoID=' + row.id + '\'">Cập nhật</button> ' +
+                            '<button type="button" onclick="window.location.href=\'register_pawn_detail.php?id=' + row.id + '\'">' + (row.product_detail ? 'Cập nhật chi tiết' : 'Thêm chi tiết') + '</button> ' +
+                            '<button type="button" onclick="window.location.href=\'history.php?userID=' + row.user_id + '&pawnInfoID=' + row.id + '&pawnDetailID=' + row.pawn_detail_id + '\'">Lịch sử</button> ' +
+                            '<button type="button" onclick="showConfirmationModal(' + row.id + ',' + row.pawn_detail_id + ');">Xóa</button>' +
                             '</td>' +
                             '</tr>';
 
