@@ -82,7 +82,6 @@ if (isset($_SESSION['user']) && $_SESSION['user'] == 'admin') {
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
         <link rel="stylesheet" href="/web/css/style.css">
         <link rel="stylesheet" href="/web/css/search.css">
-        <link rel="stylesheet" type="text/css" href="/web/css/print.css" media="print">
         <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
         <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
         <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
@@ -223,16 +222,18 @@ if (isset($_SESSION['user']) && $_SESSION['user'] == 'admin') {
             </div>
 
             <div id="printDialog" class="dialog-overlay hidden">
-            <div class="dialog-content">
-                <button id="closePreview" class="close-preview-button">
-                    <i class="fas fa-times"></i>
-                </button>
-                <table id="previewTable" class="preview-table">
-                </table>
-                <div class="print-button-container" style="width: 100%;">
-                    <button id="printToPaper">In hóa đơn</button>
+                <div class="dialog-content">
+                    <button id="closePreview" class="close-preview-button">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    <div class="previewTable-content">
+                        <table id="previewTable" class="preview-table">
+                        </table>
+                    </div>
+                    <div class="print-button-container" style="width: 100%;">
+                        <button id="printToPaper">In hóa đơn</button>
+                    </div>
                 </div>
-            </div>
             </div>
 
             <div id="confirmationModal" class="modal" style="display: none;">

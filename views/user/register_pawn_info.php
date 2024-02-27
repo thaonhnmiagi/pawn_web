@@ -153,7 +153,7 @@ if (isset($_SESSION['user']) && $_SESSION['user'] == 'admin') {
 
         <section>
             <div class="register_pawn_form">
-                <form action="" method="post" enctype="multipart/form-data">
+                <form id="pawnForm" action="" method="post" enctype="multipart/form-data">
                     <h2>Đăng ký thông tin cầm đồ</h2>
                     <div class="input_box">
                         <input type="text" id="input_user_id" name="id" placeholder="Nhập CMND" required oninput="checkUser()">
@@ -233,9 +233,93 @@ if (isset($_SESSION['user']) && $_SESSION['user'] == 'admin') {
                             ?>
                         </select>
                     </div>
-
-                    <button type="submit" class="button" name="submit">Đăng ký</button>
+                    <input type="hidden" name="submit" value="1">
+                    <button type="submit" class="button">Đăng ký</button>
                 </form>
+            </div>
+
+            <div id="printDialog" class="dialog-overlay hidden">
+                <div class="dialog-content">
+                    <button id="closePreview" class="close-preview-button">
+                        <i class="fas fa-times"></i>
+                    </button>
+
+                    <div class="span_box">
+                        <i class="fa-solid fa-id-card"></i>
+                        <span>CMND:&nbsp;</span>
+                        <span id="user_id_span"></span>
+                    </div>
+
+                    <div class="span_box">
+                        <i class="fa-solid fa-user"></i>
+                        <span>Họ và tên:&nbsp;</span>
+                        <span id="full_name_span"></span>
+                    </div>
+
+                    <div class="span_box">
+                        <i class="fa-solid fa-phone"></i>
+                        <span>Số điện thoại:&nbsp;</span>
+                        <span id="phone_span"></span>
+                    </div>
+
+                    <div class="span_box">
+                        <i class="fa-solid fa-location-dot"></i>
+                        <span>Địa chỉ:&nbsp;</span>
+                        <span id="address_span"></span>
+                    </div>
+
+                    <div class="span_box">
+                        <i class="fa-solid fa-user"></i>
+                        <span>Loại khách hàng:&nbsp;</span>
+                        <span id="user_type_span"></span>
+                    </div>
+
+                    <div class="span_box">
+                        <i class="fa-solid fa-box"></i>
+                        <span>Loại hàng hoá:&nbsp;</span>
+                        <span id="type_span"></span>
+                    </div>
+
+                    <div class="span_box">
+                        <i class="fa-solid fa-money-check-dollar"></i>
+                        <span>Giá:&nbsp;</span>
+                        <span id="price_span"></span>
+                    </div>
+
+                    <div class="span_box">
+                        <i class="fa-solid fa-money-check-dollar"></i>
+                        <span>Thuế cầm:&nbsp;</span>
+                        <span id="interest_rate_span"></span>
+                    </div>
+
+                    <div class="span_box">
+                        <i class="fa-solid fa-calendar-days"></i>
+                        <span>Thời gian cầm:&nbsp;</span>
+                        <span id="time_span"></span>
+                    </div>
+
+                    <div class="span_box">
+                        <i class="fa-solid fa-calendar-days"></i>
+                        <span>Ngày bắt đầu:&nbsp;</span>
+                        <span id="start_time_span"></span>
+                    </div>
+
+                    <div class="span_box">
+                        <i class="fa-solid fa-calendar-days"></i>
+                        <span>Ngày kết thúc:&nbsp;</span>
+                        <span id="end_time_span"></span>
+                    </div>
+
+                    <div class="span_box">
+                        <i class="fa-solid fa-home"></i>
+                        <span>Kho lưu trữ:&nbsp;</span>
+                        <span id="warehouse_span"></span>
+                    </div>
+
+                    <div class="print-button-container" style="width: 100%;">
+                        <button id="printToPaper">In hóa đơn</button>
+                    </div>
+                </div>
             </div>
         </section>
 

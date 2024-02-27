@@ -26,3 +26,69 @@ th {
 .actions {
     white-space: nowrap;
 }
+
+.print-button-container {
+    text-align: right;
+    width: 80%;
+    margin-top: 20px;
+}
+
+.dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+  }
+  
+  .dialog-content {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    height: 60%;
+  }
+
+  .previewTable-content{
+    height: 80%;
+    overflow-y: auto;
+    margin-top: 40px;
+    margin-bottom: 20px;
+  }
+  
+  .dialog-overlay.hidden {
+    display: none;
+  }
+
+  .preview-table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 0px;
+  }
+
+  .close-preview-button{
+    float: right;
+    border: none;
+    background: none;
+  }
+  
+  @media print {
+    .search_form, .section-p1, .login, .print-button-container, .logo, .navbar-header, .close-preview-button, .history_table{
+        display: none;
+    }
+    
+    .dialog-content{
+        border-radius: 0px;
+        box-shadow: none;
+        height: auto;
+    }
+
+    .dialog-overlay{
+        position: static;
+    }
+  }

@@ -14,19 +14,40 @@ $(document).ready(function () {
         }
     });
 
-    document.getElementById('printToPaper').addEventListener('click', function() {
-        window.print();
-    });
-
-    document.getElementById('previewPrint').addEventListener('click', openPrintDialog);
-
-    document.getElementById('closePreview').addEventListener('click', closePreviewDialog);
+    let printToPaperButton = document.getElementById('printToPaper');
+    if (printToPaperButton) {
+        printToPaperButton.addEventListener('click', function() {
+            window.print();
+        });
+    }
+    
+    let previewPrintButton = document.getElementById('previewPrint');
+    if (previewPrintButton) {
+        previewPrintButton.addEventListener('click', openPrintDialog);
+    }
+    
+    let closePreviewButton = document.getElementById('closePreview');
+    if (closePreviewButton) {
+        closePreviewButton.addEventListener('click', closePreviewDialog);
+    }
 });
 
 function openPrintDialog() {
     var table = document.getElementById('searchTable');
     var previewTable = document.getElementById('previewTable');
-    previewTable.innerHTML = table.innerHTML;
+    previewTable.innerHTML = '';
+
+    var columnsToCopy = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]; 
+
+    for (var i = 0; i < table.rows.length; i++) {
+        var newRow = previewTable.insertRow(); 
+
+        for (var j = 0; j < columnsToCopy.length; j++) {
+            var cell = newRow.insertCell(); 
+            var sourceCell = table.rows[i].cells[columnsToCopy[j]];
+            cell.innerHTML = sourceCell.innerHTML; 
+        }
+    }
 
     document.getElementById('printDialog').classList.remove('hidden');
 }

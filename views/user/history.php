@@ -35,7 +35,7 @@ if (isset($_SESSION['user']) && $_SESSION['user'] == 'admin') {
         <section id="header">
             <a href="#"><img src="/web/img/logo.png" class="logo" alt=""></a>
 
-            <div>
+            <div class="navbar-header">
                 <ul id="navbar">
                     <li><a href="/views/home/index.php"><i class="fa-solid fa-house"></i> Trang chủ</a></li>
                     <?php
@@ -140,7 +140,10 @@ if (isset($_SESSION['user']) && $_SESSION['user'] == 'admin') {
             </div> -->
 
             <div class="history_table">
-                <table>
+                <div class="print-button-container">
+                    <button id="previewPrint">In hóa đơn</button>
+                </div>
+                <table id="historyTable">
                     <thead>
                         <tr>
                             <th>ID</th>
@@ -204,6 +207,21 @@ if (isset($_SESSION['user']) && $_SESSION['user'] == 'admin') {
                     </tbody>
                 </table>
             </div>
+
+            <div id="printDialog" class="dialog-overlay hidden">
+                <div class="dialog-content">
+                    <button id="closePreview" class="close-preview-button">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    <div class="previewTable-content">
+                        <table id="previewTable" class="preview-table">
+                        </table>
+                    </div>
+                    <div class="print-button-container" style="width: 100%;">
+                        <button id="printToPaper">In hóa đơn</button>
+                    </div>
+                </div>
+            </div>
         </section>
 
         <footer class="section-p1">
@@ -234,6 +252,7 @@ if (isset($_SESSION['user']) && $_SESSION['user'] == 'admin') {
         </footer>
 
         <script src="/web/js/script.js"></script>
+        <script src="/web/js/history.js"></script>
     </body>
 
     </html>
