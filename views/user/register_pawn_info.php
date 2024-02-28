@@ -54,7 +54,7 @@ if (isset($_POST["submit"])) {
     $formatted_end_date = DateTime::createFromFormat('d-m-Y', $end_date_str);
     $start_date = $formatted_start_date->format('Y-m-d');
     $end_date = $formatted_end_date->format('Y-m-d');
-    $extend_date = null;
+    $extend_date = '0000-00-00';
 
     $warehouse = $_POST['warehouse'];
 
@@ -63,7 +63,9 @@ if (isset($_POST["submit"])) {
     if (mysqli_query($conn, $query)) {
         $history_id = time() . mt_rand(1000, 9999);
         $status = 1; // 0: Hết thời gian gia hạn, 1: Trong thời gian gia hạn, 2: đã (xóa) trả hàng và thanh toán
-        $queryHistory = "INSERT INTO history VALUES ($history_id, $user_id, $id, '', '$interest_rate_id', $status, '$start_date', '$end_date', '', $price, '$interest_rate_price', '');";
+        $insert_at = date('Y-m-d H:i:s');
+
+        $queryHistory = "INSERT INTO history VALUES ($history_id, $user_id, $id, '', '$interest_rate_id', $status, '$start_date', '$end_date', '$extend_date', $price, $price, '$interest_rate_price', '', '', '$insert_at');";
         if (mysqli_query($conn, $queryHistory)) {
             header("Location: /views/user/search.php");
         } else {
@@ -103,9 +105,10 @@ if (isset($_SESSION['user']) && $_SESSION['user'] == 'admin') {
                     if (isset($_SESSION['user']) && $_SESSION['user'] == 'admin') {
                         echo '<li><a href="register_user.php">Đăng ký khách hàng</a></li>';
                         echo '<li><a class="active" href="register_pawn_info.php">Đăng ký cầm đồ</a></li>';
-                        echo '<li><a href="search.php">Tìm kiếm</a></li>';
+                        echo '<li><a href="/views/user/dashboard.php">Thống kê</a></li>';
                     }
                     ?>
+                    <li><a href="/views/user/search.php">Tìm kiếm</a></li>
                     <li><a href="about.html">Về chúng tôi</a></li>
                     <li><a href="/views/home/contact.php">Liên hệ</a></li>
                     <li id="user_login"><a href="#" id="form_open"><i class="fa-solid fa-user"></i></a></li>

@@ -25,9 +25,10 @@ session_start();
                 if (isset($_SESSION['user']) && $_SESSION['user'] == 'admin') {
                     echo '<li><a href="/views/user/register_user.php">Đăng ký khách hàng</a></li>';
                     echo '<li><a href="/views/user/register_pawn_info.php">Đăng ký cầm đồ</a></li>';
-                    echo '<li><a href="/views/user/search.php">Tìm kiếm</a></li>';
+                    echo '<li><a href="/views/user/dashboard.php">Thống kê</a></li>';
                 }
                 ?>
+                <li><a href="/views/user/search.php">Tìm kiếm</a></li>
                 <li><a href="about.html">Về chúng tôi</a></li>
                 <li><a class="active" href="contact.php">Liên hệ</a></li>
                 <li id="user_login"><a href="#" id="form_open"><i class="fa-solid fa-user"></i></a></li>

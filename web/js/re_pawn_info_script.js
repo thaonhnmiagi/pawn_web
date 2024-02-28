@@ -1,13 +1,7 @@
 // format input price
 $(document).ready(function () {
-    $('#formatPrice').on('input', function () {
-        var inputValue = $(this).val().replace(/[^0-9]/g, '').replace(/^0+/, '');
-        var formattedValue = inputValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-        $(this).val(formattedValue);
-
-        $('#price').val(inputValue);
-    });
-    $('#formatPrice').trigger('input');
+    formatPrice('#formatPrice', '#price');
+    formatPrice('#formatPrepayment', '#prepayment');
 
     $("#start_date").datepicker({ dateFormat: 'dd-mm-yy' });
     $("#end_date").datepicker({ dateFormat: 'dd-mm-yy' });
@@ -21,6 +15,17 @@ $(document).ready(function () {
     // Initial update when the page loads
     updateFields();
 });
+
+function formatPrice(inputId, hiddenInputId) {
+    $(inputId).on('input', function () {
+        var inputValue = $(this).val().replace(/[^0-9]/g, '').replace(/^0+/, '');
+        var formattedValue = inputValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        $(this).val(formattedValue);
+
+        $(hiddenInputId).val(inputValue);
+    });
+    $(inputId).trigger('input');
+}
 
 // set start_date, end_date
 var startDateInput = document.getElementById("start_date");

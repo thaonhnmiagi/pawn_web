@@ -66,14 +66,6 @@ function closeConfirmationModal() {
     $('#confirmationModal').hide();
 }
 
-function formatDate(inputDate) {
-    var date = new Date(inputDate);
-    var formattedDate = ('0' + date.getDate()).slice(-2) + '-' +
-        ('0' + (date.getMonth() + 1)).slice(-2) + '-' +
-        date.getFullYear();
-    return formattedDate;
-}
-
 function searchInfo() {
     var pawnIdValue = $('#input_pawn_id').val();
     var userIdValue = $('#input_user_id').val();
@@ -121,7 +113,7 @@ function searchInfo() {
                             '<td>' + row.interest_rate_name + '</td>' +
                             '<td>' + row.product_detail + '</td>' +
                             '<td>' + row.price + '</td>' +
-                            '<td>' + row.interest_rate_price + '</td>' +
+                            '<td>' + row.interest_rate_price + '%' + '</td>' +
                             '<td>' + row.interest_rate_time + ' tháng' + '</td>' +
                             '<td>' + start_date + '</td>' +
                             '<td>' + end_date + '</td>' +

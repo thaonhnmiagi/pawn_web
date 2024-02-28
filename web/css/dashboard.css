@@ -1,0 +1,99 @@
+.dashboard_form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+}
+
+.dashboard_form form {
+    width: 70%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.dashboard_form canvas {
+    width: 100%;
+    max-width: 50%;
+    max-height: 70%;
+}
+
+.row {
+    display: flex;
+    justify-content: space-between;
+}
+
+.select_box,
+.input_box {
+    flex: 1;
+    margin-right: 10px;
+    display: flex;
+}
+
+.dashboard_form h2 {
+    text-align: center;
+}
+
+.input_box input,
+.select_box select {
+    height: 100%;
+    width: 100%;
+    box-sizing: border-box;
+    border: none;
+    outline: none;
+    padding: 0 30px;
+    color: #333;
+    transition: all 0.2s ease;
+    border-bottom: 1.5px solid #AAAAAA;
+}
+
+.input_box input:focus,
+.select_box select:focus {
+    border-color: #7D2AE8;
+}
+
+.input_box i {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 20px;
+}
+
+.input_box i.time {
+    left: 0;
+    color: #707070;
+}
+
+.input_box input:focus~i.time {
+    color: #7D2AE8;
+}
+
+.select_box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.select_box select {
+    width: 100%;
+    padding: 0 25px;
+    margin-top: 25px;
+}
+
+.select_box select option[disabled] {
+    color: #999;
+}
+
+.select_box select option:checked {
+    font-weight: bold;
+}
+
+.dashboard_form .button {
+    background: #7D2AE8;
+    color: #F5F5F5;
+    margin: 25px 0 30px 0;
+    width: 100%;
+    padding: 10px 0;
+    border-radius: 10px;
+}

@@ -96,7 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'interest_rate_name' => $rowInterestRates['name'],
                 'pawn_detail_id' => $pawnDetailID,
                 'product_detail' => $productDetail,
-                'price' => (float) $row['price'],
+                'price' => $row['price'],
                 'interest_rate_price' => $row['interest_rate_price'],
                 'interest_rate_time' => $rowInterestRates['time'],
                 'start_date' => $row['start_date'],
