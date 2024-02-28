@@ -33,11 +33,12 @@ if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['pawnInfoID'])) {
 
             $interestRateID = $row['interest_rate_id'];
             $currentImage = $row['image'];
-            $price = (float) $row['price'];
+            $price = $row['price'];
             $interest_rate = $row['interest_rate_price'];
             $startDate = date("d-m-Y", strtotime($row['start_date']));
             $endDate = date("d-m-Y", strtotime($row['end_date']));
             $extendDate = $row['extend_date'] != '0000-00-00 00:00:00' ? date("d-m-Y", strtotime($row['extend_date'])) : '00-00-0000';
+            $prepayment = 0;
             $warehouseID = $row['warehouse_id'];
         }
         $isFirstLoad = true;
@@ -82,7 +83,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_GET['userID']) && isset($_GE
     $end_date = $formatted_end_date->format('Y-m-d');
     $extend_date = $formatted_extend_date->format('Y-m-d');
 
+    $prepayment = $_POST['prepayment'];
     $warehouse = $_POST['warehouse'];
+
+    $sqlPawnInfo = "SELECT * FROM pawn_info WHERE id = '$pawn_info_id'";
+    $resultPawnInfo = $conn->query($sqlPawnInfo);
+    $loan_amount = 0;
+    if ($resultPawnInfo->num_rows > 0) {
+        while ($row = $resultPawnInfo->fetch_assoc()) {
+            $loan_amount = ($price > $row['price'] ? '+' : '-') . abs($price - $row['price']);
+        }
+    }
+
+    if ($prepayment) {
+        $profit = $price * ($interest_rate_price / 100) + $price;
+        $price = $profit - $prepayment; // Cập nhật lại giá cầm
+    } else {
+        $prepayment = 0;
+        $profit = 0;
+    }
 
     if (!empty($_FILES["image"]["tmp_name"])) {
         $tmp_name = $_FILES["image"]["tmp_name"];
@@ -105,7 +124,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_GET['userID']) && isset($_GE
         }
 
         $history_id = time() . mt_rand(1000, 9999);
-        $queryHistory = "INSERT INTO history VALUES ($history_id, $user_id, '$pawn_info_id', '$pawn_detail_id', '$interest_rate_id', $pawn_status, '$start_date', '$end_date', '$extend_date', $price, '$interest_rate_price', '');";
+        $insert_at = date('Y-m-d H:i:s');
+        $price = $_POST['price']; // Giá cầm ban đầu
+
+        $queryHistory = "INSERT INTO history VALUES ($history_id, $user_id, '$pawn_info_id', '$pawn_detail_id', '$interest_rate_id', $pawn_status, '$start_date', '$end_date', '$extend_date', $price, $loan_amount, '$interest_rate_price', $prepayment, $profit, '$insert_at');";
         if (mysqli_query($conn, $queryHistory)) {
             header("Location: /views/user/search.php");
         } else {
@@ -146,9 +168,10 @@ if (isset($_SESSION['user']) && $_SESSION['user'] == 'admin') {
                         echo '<li><a href="register_user.php">Đăng ký khách hàng</a></li>';
                         echo '<li><a href="register_pawn_info.php">Đăng ký cầm đồ</a></li>';
                         echo '<li><a class="active" href="update_pawn_info.php">Cập nhật thông tin cầm đồ</a></li>';
-                        echo '<li><a href="search.php">Tìm kiếm</a></li>';
+                        echo '<li><a href="/views/user/dashboard.php">Thống kê</a></li>';
                     }
                     ?>
+                    <li><a href="/views/user/search.php">Tìm kiếm</a></li>
                     <li><a href="about.html">Về chúng tôi</a></li>
                     <li><a href="/views/home/contact.php">Liên hệ</a></li>
                     <li id="user_login"><a href="#" id="form_open"><i class="fa-solid fa-user"></i></a></li>
@@ -251,7 +274,7 @@ if (isset($_SESSION['user']) && $_SESSION['user'] == 'admin') {
                     </div>
 
                     <div class="input_box">
-                        <input type="text" id="interest_rate" name="interest_rate" placeholder="Thuế cầm" value="<?php echo $interest_rate ?>" required>
+                        <input type="text" id="interest_rate" name="interest_rate" placeholder="Thuế cầm" value="<?php echo $interest_rate . '%' ?>" required>
                         <i class="fa-solid fa-money-check-dollar interest_rate"></i>
                     </div>
 
@@ -270,9 +293,17 @@ if (isset($_SESSION['user']) && $_SESSION['user'] == 'admin') {
                         <i class="fa-regular fa-calendar-days time end_date"></i>
                     </div>
 
-                    <div class="input_box" id="extend_date_container" style="display: none;">
-                        <input type="text" id="extend_date" name="extend_date" placeholder="Ngày gia hạn" value="<?php echo $extendDate ?>" required>
-                        <i class="fa-regular fa-calendar-days time"></i>
+                    <div id="extend_date_container" style="display: none;">
+                        <div class="input_box">
+                            <input type="text" id="extend_date" name="extend_date" placeholder="Ngày gia hạn" value="<?php echo $extendDate ?>">
+                            <i class="fa-regular fa-calendar-days time"></i>
+                        </div>
+
+                        <div class="input_box">
+                            <input type="text" id="formatPrepayment" name="formatPrepayment" placeholder="Giá" value="<?php echo $prepayment ?>">
+                            <input type="hidden" id="prepayment" name="prepayment" value="<?php echo $prepayment ?>">
+                            <i class="fa-solid fa-money-check-dollar price"></i>
+                        </div>
                     </div>
 
                     <div class="select_box">

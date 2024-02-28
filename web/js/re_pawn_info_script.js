@@ -1,13 +1,7 @@
 // format input price
 $(document).ready(function () {
-    $('#formatPrice').on('input', function () {
-        var inputValue = $(this).val().replace(/[^0-9]/g, '').replace(/^0+/, '');
-        var formattedValue = inputValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-        $(this).val(formattedValue);
-
-        $('#price').val(inputValue);
-    });
-    $('#formatPrice').trigger('input');
+    formatPrice('#formatPrice', '#price');
+    formatPrice('#formatPrepayment', '#prepayment');
 
     $("#start_date").datepicker({ dateFormat: 'dd-mm-yy' });
     $("#end_date").datepicker({ dateFormat: 'dd-mm-yy' });
@@ -21,17 +15,17 @@ $(document).ready(function () {
     // Initial update when the page loads
     updateFields();
 
-    $("#pawnForm").submit(function(event) {
+    $("#pawnForm").submit(function (event) {
         event.preventDefault(); // Prevent default form submission
         var formData = new FormData($(this)[0]); // Get form data
-        
+
         $.ajax({
-            url: $(this).attr('action'), 
-            type: $(this).attr('method'), 
-            data: formData, 
+            url: $(this).attr('action'),
+            type: $(this).attr('method'),
+            data: formData,
             processData: false,
             contentType: false,
-            success: function(response) {
+            success: function (response) {
                 document.getElementById("printDialog").classList.remove("hidden");
 
                 // Get the value from the input field
@@ -47,7 +41,7 @@ $(document).ready(function () {
                 let startDate = document.getElementById('start_date').value;
                 let endDate = document.getElementById('end_date').value;
                 let warehouse = document.getElementById('warehouse').value;
-                
+
 
                 // Set the value as the text content of the span
                 document.getElementById('user_id_span').textContent = inputUserId;
@@ -63,7 +57,7 @@ $(document).ready(function () {
                 document.getElementById('end_time_span').textContent = endDate;
                 document.getElementById('warehouse_span').textContent = warehouse;
             },
-            error: function(xhr, status, error) {
+            error: function (xhr, status, error) {
                 console.log(error);
             }
         });
@@ -76,7 +70,7 @@ $(document).ready(function () {
 
     let printToPaperButton = document.getElementById('printToPaper');
     if (printToPaperButton) {
-        printToPaperButton.addEventListener('click', function() {
+        printToPaperButton.addEventListener('click', function () {
             window.print();
         });
     }
@@ -109,12 +103,12 @@ function openInfoPrintDialog() {
     let endDate = document.getElementById('end_date').value;
     let warehouse = document.getElementById('warehouse').value;
     let extendDate;
-    let extendDateField= document.getElementById('extend_date');
+    let extendDateField = document.getElementById('extend_date');
     var isVisible = extendDateField.offsetParent !== null && window.getComputedStyle(extendDateField).display !== 'none';
     if (extendDateField && isVisible) {
         extendDate = extendDateField.value;
     }
-    
+
 
     // Set the value as the text content of the span
     document.getElementById('user_id_span').textContent = inputUserId;
@@ -139,6 +133,17 @@ function closePreviewDialog() {
 
 function closeInfoPreviewDialog() {
     document.getElementById('printInfoDialog').classList.add('hidden');
+}
+
+function formatPrice(inputId, hiddenInputId) {
+    $(inputId).on('input', function () {
+        var inputValue = $(this).val().replace(/[^0-9]/g, '').replace(/^0+/, '');
+        var formattedValue = inputValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        $(this).val(formattedValue);
+
+        $(hiddenInputId).val(inputValue);
+    });
+    $(inputId).trigger('input');
 }
 
 // set start_date, end_date

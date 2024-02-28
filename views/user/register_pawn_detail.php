@@ -59,11 +59,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_GET['id'])) {
                 $interest_rate_id = $row['interest_rate_id'];
                 $start_date = $row['start_date'];
                 $end_date = $row['end_date'];
+                $extend_date = $row['extend_date'];
                 $price = $row['price'];
                 $interest_rate_price = $row['interest_rate_price'];
+                $insert_at = date('Y-m-d H:i:s');
+                $prepayment = 0;
+                $profit = 0;
+
+                if ($pawn_status == 0 || $pawn_status == 2) {
+                    $profit = $price * ($interest_rate_price / 100) + $price;
+                }
 
                 $history_id = time() . mt_rand(1000, 9999);
-                $queryHistory = "INSERT INTO history VALUES ($history_id, $user_id, '$pawn_info_id', '$pawn_detail_id', '$interest_rate_id', $pawn_status, '$start_date', '$end_date', '', $price, '$interest_rate_price', '');";
+                $queryHistory = "INSERT INTO history VALUES ($history_id, $user_id, '$pawn_info_id', '$pawn_detail_id', '$interest_rate_id', $pawn_status, '$start_date', '$end_date', '$extend_date', $price, 0, '$interest_rate_price', $prepayment, $profit, '$insert_at');";
 
                 if (mysqli_query($conn, $queryHistory)) {
                     header("Location: /views/user/search.php");
@@ -111,9 +119,10 @@ if (isset($_SESSION['user']) && $_SESSION['user'] == 'admin') {
                         } else {
                             echo '<li><a class="active" href="register_pawn_detail.php">Thêm chi tiết thông tin cầm đồ</a></li>';
                         }
-                        echo '<li><a href="search.php">Tìm kiếm</a></li>';
+                        echo '<li><a href="/views/user/dashboard.php">Thống kê</a></li>';
                     }
                     ?>
+                    <li><a href="/views/user/search.php">Tìm kiếm</a></li>
                     <li><a href="about.html">Về chúng tôi</a></li>
                     <li><a href="/views/home/contact.php">Liên hệ</a></li>
                     <li id="user_login"><a href="#" id="form_open"><i class="fa-solid fa-user"></i></a></li>
