@@ -48,13 +48,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ELSE 0
             END
         ) AS total_interest_rate,
-        (SUM(
+        CASE
+            WHEN SUM(
+                CASE
+                    WHEN prepayment > 0 THEN prepayment
+                    WHEN prepayment = 0 AND profit IS NOT NULL AND status = 0 THEN profit - COALESCE(loan_amount, 0)
+                    ELSE 0
+                END
+            ) = 0 THEN 0
+            ELSE (SUM(
             CASE
                 WHEN prepayment > 0 THEN prepayment
                 WHEN prepayment = 0 AND profit IS NOT NULL AND status = 0 THEN profit - COALESCE(loan_amount, 0)
                 ELSE 0
             END
-        ) - COALESCE(SUM(loan_amount), 0)) AS total_profit
+        ) - COALESCE(SUM(loan_amount), 0))
+    END AS total_profit
     FROM history
     WHERE 1 $date_condition
     GROUP BY user_id, pawn_info_id;
@@ -226,6 +235,7 @@ if (isset($_SESSION['user']) && $_SESSION['user'] == 'admin') {
             </div>
         </footer>
 
+        <script src="/web/js/script.js"></script>
         <script src="/web/js/dashboard.js"></script>
     </body>
 
