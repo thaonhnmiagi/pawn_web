@@ -45,8 +45,7 @@ if (isset($_POST["submit"])) {
     $image = $conn->real_escape_string($data);
 
     $price = $_POST['price'];
-    $interest_rate_price = $_POST['interest_rate'];
-
+    $interest_rate_price = isset($_POST['interest_rate']) ? intval($_POST['interest_rate']) : 0;
     // Format the dates to 'YYYY-MM-DD'
     $start_date_str = $_POST['start_date'];
     $end_date_str = $_POST['end_date'];
@@ -58,14 +57,13 @@ if (isset($_POST["submit"])) {
 
     $warehouse = $_POST['warehouse'];
 
-    $query = "INSERT INTO pawn_info VALUES ($id, $user_id, '$interest_rate_id', '$user_type', '$image', $price, '$interest_rate_price', '$start_date', '$end_date', '$extend_date', '$warehouse');";
-
+    $query = "INSERT INTO pawn_info VALUES ($id, $user_id, '$interest_rate_id', '$user_type', '$image', $price, $interest_rate_price, '$start_date', '$end_date', '$extend_date', '$warehouse');";
     if (mysqli_query($conn, $query)) {
         $history_id = time() . mt_rand(1000, 9999);
         $status = 1; // 0: Hết thời gian gia hạn, 1: Trong thời gian gia hạn, 2: đã (xóa) trả hàng và thanh toán
         $insert_at = date('Y-m-d H:i:s');
 
-        $queryHistory = "INSERT INTO history VALUES ($history_id, $user_id, $id, '', '$interest_rate_id', $status, '$start_date', '$end_date', '$extend_date', $price, $price, '$interest_rate_price', '', '', '$insert_at');";
+        $queryHistory = "INSERT INTO history VALUES ($history_id, $user_id, $id, '', '$interest_rate_id', $status, '$start_date', '$end_date', '$extend_date', $price, $price, '$interest_rate_price', 0, 0, '$insert_at');";
         if (mysqli_query($conn, $queryHistory)) {
             header("Location: /views/user/search.php");
         } else {

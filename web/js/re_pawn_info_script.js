@@ -108,6 +108,7 @@ function openInfoPrintDialog() {
     if (extendDateField && isVisible) {
         extendDate = extendDateField.value;
     }
+    let formatPrepaymentPrice = document.getElementById('formatPrepayment').value;
 
 
     // Set the value as the text content of the span
@@ -123,6 +124,7 @@ function openInfoPrintDialog() {
     document.getElementById('start_time_span').textContent = startDate;
     document.getElementById('end_time_span').textContent = endDate;
     document.getElementById('extend_time_span').textContent = extendDate;
+    document.getElementById('prepayment_span').textContent = formatPrepaymentPrice;
     document.getElementById('warehouse_span').textContent = warehouse;
 }
 

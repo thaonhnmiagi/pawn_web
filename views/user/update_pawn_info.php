@@ -71,7 +71,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_GET['userID']) && isset($_GE
     $user_id = $_GET['userID'];
     $interest_rate_id = $_POST['type'];
     $price = $_POST['price'];
-    $interest_rate_price = $_POST['interest_rate'];
+    $interest_rate_price = isset($_POST['interest_rate']) ? intval($_POST['interest_rate']) : 0;
 
     $start_date_str = $_POST['start_date'];
     $end_date_str = $_POST['end_date'];
@@ -81,7 +81,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_GET['userID']) && isset($_GE
     $formatted_extend_date = DateTime::createFromFormat('d-m-Y', $extend_date_str);
     $start_date = $formatted_start_date->format('Y-m-d');
     $end_date = $formatted_end_date->format('Y-m-d');
-    $extend_date = $formatted_extend_date->format('Y-m-d');
+    $extend_date = $formatted_extend_date->format('Y-m-d') == '-0001-11-30' ? '0000-00-00' : $formatted_extend_date->format('Y-m-d');
 
     $prepayment = $_POST['prepayment'];
     $warehouse = $_POST['warehouse'];
@@ -401,6 +401,12 @@ if (isset($_SESSION['user']) && $_SESSION['user'] == 'admin') {
                         <i class="fa-solid fa-calendar-days"></i>
                         <span>Ngày gia hạn:&nbsp;</span>
                         <span id="extend_time_span"></span>
+                    </div>
+
+                    <div class="span_box">
+                        <i class="fa-solid fa-money-check-dollar"></i>
+                        <span>Tiền trả trước:&nbsp;</span>
+                        <span id="prepayment_span"></span>
                     </div>
 
                     <div class="span_box">
