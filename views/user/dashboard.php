@@ -19,8 +19,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($period === 'custom') {
         $formatted_start_date = $_POST['start_date'];
         $formatted_end_date = $_POST['end_date'];
-        $start_date = (new DateTime($formatted_start_date))->format('Y-m-d');
-        $end_date = (new DateTime($formatted_end_date))->format('Y-m-d');
+        $start_date = (new DateTime($formatted_start_date))->setTime(0, 0, 0)->format('Y-m-d H:i:s');
+        $end_date = (new DateTime($formatted_end_date))->setTime(23, 59, 59)->format('Y-m-d H:i:s');
         $date_condition = "AND insert_at BETWEEN '$start_date' AND '$end_date'";
     } else {
         $current_date = date('Y-m-d H:i:s');

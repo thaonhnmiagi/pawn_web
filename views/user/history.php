@@ -143,6 +143,7 @@ if ($conn->connect_error) {
                                 $start_date = date("d-m-Y", strtotime($row['start_date']));
                                 $end_date = date("d-m-Y", strtotime($row['end_date']));
                                 $extend_date = $row['extend_date'] != '0000-00-00 00:00:00' ? date("d-m-Y", strtotime($row['extend_date'])) : '00-00-0000';
+                                $insert_at = date("d-m-Y H:i:s", strtotime($row['insert_at']));
                                 $return = $row['profit'] - $row['prepayment'];
 
                                 echo '<tr>';
@@ -157,7 +158,7 @@ if ($conn->connect_error) {
                                 echo '<td>' . $end_date . '</td>';
                                 echo '<td>' . $extend_date . '</td>';
                                 echo '<td>' . $row['warehouse_id'] . '</td>';
-                                echo '<td>' . $row['insert_at'] . '</td>';
+                                echo '<td>' . $insert_at . '</td>';
                                 echo '<td>' . $row['profit'] . '</td>';
                                 echo '<td>' . $row['prepayment'] . '</td>';
                                 echo '<td>' . $return . '</td>';

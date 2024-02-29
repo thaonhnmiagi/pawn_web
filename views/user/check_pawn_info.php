@@ -22,10 +22,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $end_date = $_POST['end_date'];
     $pawn_status = $_POST['pawn_status'];
 
-    $sql = "SELECT * FROM pawn_info";
-
     if ($product_detail !== '' || $pawn_status !== '') {
-        $sql .= " INNER JOIN pawn_product_detail ON pawn_info.id = pawn_product_detail.pawn_info_id AND pawn_info.user_id = pawn_product_detail.user_id WHERE 1";
+        $sql = "SELECT *, pawn_info.id as id, pawn_product_detail.id as pawn_detail_id FROM pawn_info INNER JOIN pawn_product_detail ON pawn_info.id = pawn_product_detail.pawn_info_id AND pawn_info.user_id = pawn_product_detail.user_id WHERE 1";
         if ($product_detail !== '') {
             $sql .= " AND pawn_product_detail.product_detail like '%$product_detail%'";
         }
@@ -33,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $sql .= " AND pawn_product_detail.pawn_status = $pawn_status";
         }
     } else {
-        $sql .= " WHERE 1";
+        $sql = "SELECT * FROM pawn_info WHERE 1";
     }
 
     if ($pawn_id !== '') {

@@ -62,6 +62,14 @@ function formatDate(inputDate) {
     return formattedDate;
 }
 
+function formatDateSearch(inputDate) {
+    var date = new Date(inputDate);
+    var formattedDate = ('0' + date.getDate()).slice(-2) + '-' +
+        ('0' + (date.getMonth() + 1)).slice(-2) + '-' +
+        date.getFullYear();
+    return formattedDate;
+}
+
 // Add a new function to show the confirmation modal
 function showConfirmationModal(pawnInfoID, pawnDetailID) {
     $('#confirmationModal').show();
@@ -126,8 +134,8 @@ function searchInfo() {
                     for (var i = 0; i < data.length; i++) {
                         var row = data[i];
                         var status = row.pawn_status === '0' ? 'Hết thời gian gia hạn' : 'Trong thời gian gia hạn';;
-                        var start_date = formatDate(row.start_date);
-                        var end_date = formatDate(row.end_date);
+                        var start_date = formatDateSearch(row.start_date);
+                        var end_date = formatDateSearch(row.end_date);
 
                         var newRow = '<tr>' +
                             '<td>' + row.id + '</td>' +

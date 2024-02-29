@@ -85,7 +85,6 @@ function deletePawnInfoAndInsertHistory($conn, $user_id, $pawn_info_id, $pawn_de
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <link rel="stylesheet" href="/web/css/style.css">
     <link rel="stylesheet" href="/web/css/search.css">
-    <link rel="stylesheet" type="text/css" href="/web/css/print.css" media="print">
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
@@ -193,9 +192,12 @@ function deletePawnInfoAndInsertHistory($conn, $user_id, $pawn_info_id, $pawn_de
                     <i class="fa-regular fa-calendar-days time end_date"></i>
                 </div>
 
-                <div class="input_box">
-                    <input type="text" id="pawn_status" name="id" placeholder="Nhập trạng thái sản phẩm" oninput="searchInfo()">
-                    <i class="fa-solid fa-gift product"></i>
+                <div class="select_box">
+                    <select name="id" id="pawn_status" onchange="searchInfo()">
+                        <option value="" selected hidden>Chọn trạng thái sản phẩm</option>
+                        <option value="0">Hết thời gian gia hạn</option>
+                        <option value="1">Trong thời gian gia hạn</option>
+                    </select>
                 </div>
             </form>
         </div>
@@ -203,21 +205,6 @@ function deletePawnInfoAndInsertHistory($conn, $user_id, $pawn_info_id, $pawn_de
         <div class="search_table">
             <div class="print-button-container">
                 <button id="previewPrint">In hóa đơn</button>
-            </div>
-
-            <div id="printDialog" class="dialog-overlay hidden">
-                <div class="dialog-content">
-                    <button id="closePreview" class="close-preview-button">
-                        <i class="fas fa-times"></i>
-                    </button>
-                    <div class="previewTable-content">
-                        <table id="previewTable" class="preview-table">
-                        </table>
-                    </div>
-                    <div class="print-button-container" style="width: 100%;">
-                        <button id="printToPaper">In hóa đơn</button>
-                    </div>
-                </div>
             </div>
 
             <table id="searchTable">
